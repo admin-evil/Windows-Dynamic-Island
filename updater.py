@@ -3,8 +3,7 @@ Auto-update checker for Dynamic Island.
 Checks GitHub releases and notifies user of available updates.
 """
 import json
-from threading import Thread
-from PyQt5.QtCore import QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QObject, pyqtSignal, QThread, QTimer
 
 from version import __version__
 
@@ -21,28 +20,21 @@ except ImportError:
     HAS_REQUESTS = False
 
 
-class UpdateChecker(QObject):
-    """Checks for updates from GitHub releases."""
+class UpdateWorker(QObject):
+    """Worker for checking updates in a separate thread."""
 
     update_available = pyqtSignal(str, str)  # (new_version, download_url)
-    check_complete = pyqtSignal()
+    finished = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, repo_url, current_version):
         super().__init__()
-        self.repo_url = "https://api.github.com/repos/admin-evil/Windows-Dynamic-Island"
-        self.current_version = __version__
+        self.repo_url = repo_url
+        self.current_version = current_version
 
-    def check_for_updates(self):
-        """Check GitHub for the latest release (non-blocking)."""
-        thread = QThread()
-        thread.run = self._check_updates
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
-
-    def _check_updates(self):
-        """Fetch and compare versions."""
+    def check(self):
+        """Check for updates."""
         if not HAS_REQUESTS or not HAS_PACKAGING:
-            # Skip update check if dependencies not available
+            self.finished.emit()
             return
 
         try:
@@ -56,14 +48,12 @@ class UpdateChecker(QObject):
                 release = response.json()
                 latest_version = release.get("tag_name", "").lstrip("v")
 
-                # Only proceed if we can parse both versions
                 if latest_version:
                     try:
                         current = pkg_version.parse(self.current_version)
                         latest = pkg_version.parse(latest_version)
 
                         if latest > current:
-                            # Find download URL (.exe)
                             download_url = None
                             for asset in release.get("assets", []):
                                 if asset["name"].endswith(".exe"):
@@ -73,14 +63,66 @@ class UpdateChecker(QObject):
                             if download_url:
                                 self.update_available.emit(latest_version, download_url)
                     except Exception:
-                        # Invalid version format, skip
                         pass
 
-        except Exception as e:
-            # Silent fail - don't bother user with network errors
+        except Exception:
             pass
         finally:
-            self.check_complete.emit()
+            self.finished.emit()
+
+
+class UpdateChecker(QObject):
+    """Checks for updates from GitHub releases."""
+
+    update_available = pyqtSignal(str, str)
+
+    def __init__(self):
+        super().__init__()
+        self.repo_url = "https://api.github.com/repos/admin-evil/Windows-Dynamic-Island"
+        self.current_version = __version__
+        self.thread = None
+        self.worker = None
+
+    def check_for_updates(self):
+        """Check GitHub for the latest release (non-blocking)."""
+        # Use QTimer instead of threading to avoid Qt issues
+        QTimer.singleShot(100, self._do_check)
+
+    def _do_check(self):
+        """Perform the actual check."""
+        if not HAS_REQUESTS or not HAS_PACKAGING:
+            return
+
+        try:
+            response = requests.get(
+                f"{self.repo_url}/releases/latest",
+                timeout=5,
+                headers={"Accept": "application/vnd.github.v3+json"}
+            )
+
+            if response.status_code == 200:
+                release = response.json()
+                latest_version = release.get("tag_name", "").lstrip("v")
+
+                if latest_version:
+                    try:
+                        current = pkg_version.parse(self.current_version)
+                        latest = pkg_version.parse(latest_version)
+
+                        if latest > current:
+                            download_url = None
+                            for asset in release.get("assets", []):
+                                if asset["name"].endswith(".exe"):
+                                    download_url = asset["browser_download_url"]
+                                    break
+
+                            if download_url:
+                                self.update_available.emit(latest_version, download_url)
+                    except Exception:
+                        pass
+
+        except Exception:
+            pass
 
 
 def show_update_dialog(parent, new_version, download_url):

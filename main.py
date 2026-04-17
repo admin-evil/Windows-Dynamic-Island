@@ -21,30 +21,40 @@ from updater import UpdateChecker, show_update_dialog
 
 
 def main():
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps,    True)
+    try:
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps,    True)
 
-    app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
-    app.setApplicationName(f"Dynamic Island v{__version__}")
-    app.setApplicationVersion(__version__)
-    app.setStyle("Fusion")
+        app = QApplication(sys.argv)
+        app.setQuitOnLastWindowClosed(False)
+        app.setApplicationName(f"Dynamic Island v{__version__}")
+        app.setApplicationVersion(__version__)
+        app.setStyle("Fusion")
 
-    config = Config()
-    island = DynamicIsland(config)
-    island.show()
+        config = Config()
+        island = DynamicIsland(config)
+        island.show()
 
-    tray = SystemTrayManager(island, app)
-    tray.setup()
+        tray = SystemTrayManager(island, app)
+        tray.setup()
 
-    # Start update checker in background
-    updater = UpdateChecker()
-    updater.update_available.connect(
-        lambda new_ver, dl_url: show_update_dialog(island, new_ver, dl_url)
-    )
-    updater.check_for_updates()
+        # Start update checker in background
+        try:
+            updater = UpdateChecker()
+            updater.update_available.connect(
+                lambda new_ver, dl_url: show_update_dialog(island, new_ver, dl_url)
+            )
+            updater.check_for_updates()
+        except Exception as e:
+            # Silently fail if update checker has issues
+            print(f"Update checker error: {e}", file=sys.stderr)
 
-    sys.exit(app.exec_())
+        sys.exit(app.exec_())
+    except Exception as e:
+        print(f"FATAL ERROR: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
