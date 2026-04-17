@@ -4,11 +4,21 @@ Checks GitHub releases and notifies user of available updates.
 """
 import json
 from threading import Thread
-from packaging import version as pkg_version
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
-import requests
 
 from version import __version__
+
+try:
+    from packaging import version as pkg_version
+    HAS_PACKAGING = True
+except ImportError:
+    HAS_PACKAGING = False
+
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
 
 
 class UpdateChecker(QObject):
@@ -31,6 +41,10 @@ class UpdateChecker(QObject):
 
     def _check_updates(self):
         """Fetch and compare versions."""
+        if not HAS_REQUESTS or not HAS_PACKAGING:
+            # Skip update check if dependencies not available
+            return
+
         try:
             response = requests.get(
                 f"{self.repo_url}/releases/latest",
