@@ -4,24 +4,15 @@
 # http://msdn.microsoft.com/en-us/library/ms646997.aspx?id=7
 VSVersionInfo(
   ffi=FixedFileInfo(
-    # Contains as sequency of numbers separated by dots and is always in the format supplied by the preset.
     mask=0x3f,
     mask_ex=0x3f,
-    # Contains a bitmask that specifies the valid bits 'flags'r
     reserved=0,
-    # Contains a bitmask that specifies the Boolean attributes of the file.
     serial=0,
-    # Contains the most significant 32 bits of the file's 64-bit version number
     struct_version=(1, 0, 0, 0),
-    # Specifies the number of seconds in UTC at which this structure was created
     product_version=(1, 0, 0, 0),
-    # Specifies the most significant 32 bits of the product's 64-bit version number
     mask_ex=0x3f,
-    # Contains a bitmask that specifies the valid bits 'flagsex'
     reserved=0,
-    # Reserved; this member should always be set to zero
     dword=0x4,
-    # Specifies whether the file is a debug binary
   ),
   kids=[StringFileInfo(
       [StringTable(
