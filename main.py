@@ -1,5 +1,5 @@
 """
-Dynamic Island for Windows  –  v3
+Dynamic Island for Windows
 Entry point.
 
     pip install -r requirements.txt
@@ -13,9 +13,11 @@ os.environ.setdefault("QT_ENABLE_HIGHDPI_SCALING",   "1")
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore    import Qt
 
+from version import __version__
 from config  import Config
 from island  import DynamicIsland
 from tray    import SystemTrayManager
+from updater import UpdateChecker, show_update_dialog
 
 
 def main():
@@ -24,7 +26,8 @@ def main():
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
-    app.setApplicationName("Dynamic Island")
+    app.setApplicationName(f"Dynamic Island v{__version__}")
+    app.setApplicationVersion(__version__)
     app.setStyle("Fusion")
 
     config = Config()
@@ -33,6 +36,13 @@ def main():
 
     tray = SystemTrayManager(island, app)
     tray.setup()
+
+    # Start update checker in background
+    updater = UpdateChecker()
+    updater.update_available.connect(
+        lambda new_ver, dl_url: show_update_dialog(island, new_ver, dl_url)
+    )
+    updater.check_for_updates()
 
     sys.exit(app.exec_())
 

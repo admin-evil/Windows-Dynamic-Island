@@ -1,0 +1,40 @@
+# UTF-8
+#
+# For more details about fixed file info 'ffi' see:
+# http://msdn.microsoft.com/en-us/library/ms646997.aspx?id=7
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    # Contains as sequency of numbers separated by dots and is always in the format supplied by the preset.
+    mask=0x3f,
+    mask_ex=0x3f,
+    # Contains a bitmask that specifies the valid bits 'flags'r
+    reserved=0,
+    # Contains a bitmask that specifies the Boolean attributes of the file.
+    serial=0,
+    # Contains the most significant 32 bits of the file's 64-bit version number
+    struct_version=(1, 0, 0, 0),
+    # Specifies the number of seconds in UTC at which this structure was created
+    product_version=(1, 0, 0, 0),
+    # Specifies the most significant 32 bits of the product's 64-bit version number
+    mask_ex=0x3f,
+    # Contains a bitmask that specifies the valid bits 'flagsex'
+    reserved=0,
+    # Reserved; this member should always be set to zero
+    dword=0x4,
+    # Specifies whether the file is a debug binary
+  ),
+  kids=[StringFileInfo(
+      [StringTable(
+        u'040904B0',
+        [StringStruct(u'CompanyName', u'Dynamic Island'),
+        StringStruct(u'FileDescription', u'Dynamic Island for Windows'),
+        StringStruct(u'FileVersion', u'1.0.0.0'),
+        StringStruct(u'InternalName', u'DynamicIsland'),
+        StringStruct(u'LegalCopyright', u'2024 Dynamic Island'),
+        StringStruct(u'OriginalFilename', u'DynamicIsland.exe'),
+        StringStruct(u'ProductName', u'Dynamic Island'),
+        StringStruct(u'ProductVersion', u'1.0.0.0')])
+      ]), VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ],
+  is_exe=True
+)

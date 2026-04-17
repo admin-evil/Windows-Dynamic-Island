@@ -1,6 +1,6 @@
-# Dynamic Island for Windows  ·  v1.0 BETA
+# Dynamic Island for Windows  ·  v1.0.0
 
- **WORK IN PROGRESS** — This is a v1.0 Beta release. The app is fully functional but still under active development. Some features may need refinement, and performance optimizations are ongoing.
+ **WORK IN PROGRESS** — This is a v1.0 release. The app is fully functional with auto-update support.
 
 A native-feeling Dynamic Island for Windows — built around a proper state machine, spring-physics animations, and a priority-driven activity system. Inspired 1:1 by Apple's specification.
 
@@ -23,7 +23,7 @@ The island has four states that transition automatically based on what's happeni
 
 ---
 
-## Current Status (v1.0 Beta)
+## Current Status (v1.0)
 
  **Fully working:**
 - State transitions (IDLE → LIVE → EXPANDED)
@@ -36,12 +36,12 @@ The island has four states that transition automatically based on what's happeni
 - Clipboard history (10 items)
 - Quick notes storage
 - Customizable dimensions & font size
+- **Auto-update checking** — checks GitHub for new releases on startup
+- **Windows EXE build** — standalone executable with icon and version info
 
- **Known limitations / In development:**
-- Performance optimization ongoing (smooth 60 FPS animations)
-- Some edge cases in fullscreen detection
-- Polish on transitions between states
+ **Known limitations:**
 - Mic/Camera detection may vary by system
+- Some edge cases in fullscreen detection
 
 ---
 
@@ -144,12 +144,19 @@ dynamic-island-windows/
 ## Build standalone `.exe`
 
 ```bash
-pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed --name DynamicIsland main.py
+pip install pyinstaller packaging
+python generate_icon.py  # Generate icon.ico
+python -m PyInstaller build.spec --distpath ./dist --workpath ./build
 # → dist/DynamicIsland.exe
 ```
 
-Push a `v1.0.0` tag to GitHub to trigger the automated release workflow.
+The EXE includes:
+- Application icon (visible on file and in taskbar)
+- Version metadata (1.0.0.0)
+- Auto-update checker (non-blocking, runs on startup)
+- All dependencies bundled
+
+Push a `v1.0.0` tag to GitHub to trigger the automated release workflow and upload the EXE.
 
 ---
 
